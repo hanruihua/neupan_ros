@@ -10,6 +10,7 @@
     <arg name="marker_z" default='0.3'/>
     <arg name="scan_downsample" default='6'/>
     <arg name="dune_checkpoint" default='$(find neupan_ros)/example/gazebo_limo/pretrain_limo/model_5000.pth'/>
+    <arg name="refresh_initial_path" default='false'/>
 
     <node name='neupan_control' pkg="neupan_ros" type="neupan_node.py" output="screen">
         <param name="config_file" value="$(arg config_file)"/>
@@ -21,6 +22,7 @@
         <param name="marker_size" value="$(arg marker_size)"/>
         <param name="scan_downsample" value="$(arg scan_downsample)"/>
         <param name="dune_checkpoint" value="$(arg dune_checkpoint)"/>
+        <param name="refresh_initial_path" value="$(arg refresh_initial_path)"/>
         <remap from="/scan" to="/limo/scan"/>
         <remap from="/neupan_cmd_vel" to="/cmd_vel"/>
         <remap from="/neupan_goal" to="/move_base_simple/goal"/>

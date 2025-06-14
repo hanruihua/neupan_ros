@@ -49,8 +49,12 @@ Subscribe Topics
 | Topic Name      | Message Type                | Description                                                                                        |
 | --------------- | --------------------------- | -------------------------------------------------------------------------------------------------- |
 | `/scan`         | `sensor_msgs/LaserScan`     | The laser scan data.                                                                               |
-| `/initial_path` | `nav_msgs/Path`             | The initial path for NeuPAN.                                                                       |
-| `/neupan_goal`  | `geometry_msgs/PoseStamped` | The goal for NeuPAN. You can publish the goal to this topic to give the NeuPAN planner a new goal. |
+| `/initial_path` | `nav_msgs/Path`             | Set the initial path directly for NeuPAN.                                                                   |
+| `/neupan_goal`  | `geometry_msgs/PoseStamped` | Set the goal for NeuPAN, the initial path will be generated from the current robot state to this goal point. |
+| `/neupan_waypoints`    | `nav_msgs/Path`             | Set the waypoints for NeuPAN, the initial path will be generated from the current robot state to these waypoints. |
+
+> [!NOTE]
+> To set (refresh) the initial path, you can use one of the above three topics: "initial_path", "neupan_goal" or "neupan_waypoints". Please set `refresh_initial_path` to `True` if you want to update the initial path continuously.
 
 ROS Parameters
 
@@ -66,7 +70,7 @@ ROS Parameters
 | `~scan_downsample`      | `int` / `1`          | The downsample rate of the laser scan.                   |
 | `~scan_range`           | `str` / `0.0, 5.0`   | The distance range of the laser scan.                    |
 | `~dune_checkpoint`      | `str` / `None`       | The path of the DUNE checkpoint file.                    |
-| `~refresh_initial_path` | `bool` / `False`     | Whether to refresh the initial path.                     |
+| `~refresh_initial_path` | `bool` / `False`     | Whether to refresh the initial path so that the planner can update the initial path from goal, waypoints or given path.                     |
 | `~flip_angle`           | `bool` / `False`     | Whether to flip the angle of the scan data.              |
 | `~include_initial_path_direction` | `bool` / `False`     | Whether to set the initial path direction from the given path. If `False`, the points gradient will be used as the initial path direction.            |
 

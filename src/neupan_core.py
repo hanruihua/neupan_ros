@@ -60,7 +60,7 @@ class neupan_core:
         self.refresh_initial_path = rospy.get_param("~refresh_initial_path", False)
         self.flip_angle = rospy.get_param("~flip_angle", False)
         self.include_initial_path_direction = rospy.get_param("~include_initial_path_direction", False)
-
+        
         if self.planner_config_file is None:
             raise ValueError(
                 "No planner config file provided! Please set the parameter ~config_file"
@@ -100,10 +100,15 @@ class neupan_core:
 
         # subscriber
         rospy.Subscriber("/scan", LaserScan, self.scan_callback)
+
+        # three types of initial path:
+        # 1. from given path
+        # 2. from waypoints
+        # 3. from goal position
         rospy.Subscriber("/initial_path", Path, self.path_callback)
+        rospy.Subscriber("/neupan_waypoints", Path, self.waypoints_callback)
         rospy.Subscriber("/neupan_goal", PoseStamped, self.goal_callback)
         
-
     def run(self):
 
         r = rospy.Rate(50)
@@ -279,9 +284,43 @@ class neupan_core:
             initial_point_list.append(points)
 
         if self.neupan_planner.initial_path is None or self.refresh_initial_path:
-            rospy.loginfo_throttle(0.1, "target path update")
+            rospy.loginfo_throttle(0.1, "initial path update from given path")
             self.neupan_planner.set_initial_path(initial_point_list)
+            self.neupan_planner.reset()
+    
+    def waypoints_callback(self, path):
+        
+        '''
+        Utilize multiple waypoints (goals) to set the initial path
+        '''
 
+        waypoints_list = [self.robot_state]
+
+        for i in range(len(path.poses)):
+            p = path.poses[i]
+            x = p.pose.position.x
+            y = p.pose.position.y
+            
+            if self.include_initial_path_direction:
+                theta = self.quat_to_yaw(p.pose.orientation)
+            else:
+                rospy.loginfo_once("Using the points gradient as the initial path direction")
+
+                if i + 1 < len(path.poses):
+                    p2 = path.poses[i + 1]
+                    x2 = p2.pose.position.x
+                    y2 = p2.pose.position.y
+                    theta = atan2(y2 - y, x2 - x)
+                else:
+                    theta = waypoints_list[-1][2, 0]
+            
+            points = np.array([x, y, theta, 1]).reshape(4, 1)
+            waypoints_list.append(points)
+
+        if self.neupan_planner.initial_path is None or self.refresh_initial_path:
+            rospy.loginfo_throttle(0.1, "initial path update from waypoints")
+            self.neupan_planner.update_initial_path_from_waypoints(waypoints_list)
+            self.neupan_planner.reset()
 
     def goal_callback(self, goal):
 
@@ -293,7 +332,7 @@ class neupan_core:
 
         print(f"set neupan goal: {[x, y, theta]}")
 
-        rospy.loginfo_throttle(0.1, "reference path update")
+        rospy.loginfo_throttle(0.1, "initial path update from goal position")
         self.neupan_planner.update_initial_path_from_goal(self.robot_state, self.goal)
         self.neupan_planner.reset()
 
