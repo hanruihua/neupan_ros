@@ -1,6 +1,8 @@
 # neupan_ros
 
-This is the ROS wrapper for [NeuPAN Planner](https://github.com/hanruihua/neupan).
+This is the ROS wrapper for [NeuPAN Planner](https://github.com/hanruihua/neupan). 
+
+For ROS2 Wrapper on Limo ros2 platform, please refer to [neupan_ros2](https://github.com/KevinLADLee/neupan_ros2) maintained by [KevinLADLee](https://github.com/KevinLADLee).
 
 ## Prerequisites
 - Ubuntu 20.04
